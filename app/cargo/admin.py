@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Location, Cargo, Vehicle
 
-# Register your models here.
+
+admin.site.register(Location)
+admin.site.register(Cargo)
+admin.site.register(Vehicle)
