@@ -1,3 +1,9 @@
-from django.shortcuts import render
+# views.py
+from rest_framework import viewsets
+from .models import Cargo
+from .serializers import CargoSerializer
 
-# Create your views here.
+
+class CargoViewSet(viewsets.ModelViewSet):
+    queryset = Cargo.objects.all()
+    serializer_class = CargoSerializer
