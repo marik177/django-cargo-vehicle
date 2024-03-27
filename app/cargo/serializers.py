@@ -43,6 +43,31 @@ class CargoReadSerializer(serializers.ModelSerializer):
         return len(vehicles_within_distance)
 
 
+class CargoWithVehiclesDistanceSerializer(CargoReadSerializer):
+    nearest_vehicles_distance = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cargo
+        fields = [
+            "id",
+            "pick_up",
+            "delivery",
+            "description",
+            "weight",
+            "number_of_vehicles",
+            "nearest_vehicles_distance",
+        ]
+
+    def get_nearest_vehicles_distance(self, obj):
+        max_distance_miles = self.context["request"].query_params.get(
+            "max_distance_miles"
+        )
+        nearest_vehicles_distance = find_vehicles_within_distance_from_cargo(
+            obj.id, max_distance_miles
+        )
+        return nearest_vehicles_distance
+
+
 class CargoCreateSerializer(serializers.ModelSerializer):
     pick_up = LocationPickUpSerializer()
     delivery = LocationDeliverySerializer()
