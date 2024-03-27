@@ -2,6 +2,7 @@ from operator import itemgetter
 
 from cargo.models import Location, Cargo, Vehicle
 from geopy.distance import geodesic
+from rest_framework.exceptions import ValidationError
 
 
 def create_cargo(validated_data):
@@ -13,8 +14,20 @@ def create_cargo(validated_data):
         **{key: value for key, value in pick_up_properties.items() if value is not None}
     ).first()
 
+    # Check if pick_up_location is None
+    if not pick_up_location:
+        raise ValidationError(
+            "Pick-up location with the given parameters does not exist"
+        )
+
     # Get the delivery location based on zip_code
-    delivery_location = Location.objects.get(zip_code=zip_code)
+    delivery_location = Location.objects.filter(zip_code=zip_code).first()
+
+    # Check if delivery_location is None
+    if not delivery_location:
+        raise ValidationError(
+            "Delivery location with the given zip code does not exist"
+        )
 
     validated_data["pick_up"] = pick_up_location
     validated_data["delivery"] = delivery_location
