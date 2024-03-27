@@ -1,4 +1,7 @@
-from cargo.models import Location, Cargo
+from operator import itemgetter
+
+from cargo.models import Location, Cargo, Vehicle
+from geopy.distance import geodesic
 
 
 def create_cargo(validated_data):
@@ -17,3 +20,37 @@ def create_cargo(validated_data):
     validated_data["delivery"] = delivery_location
 
     return Cargo.objects.create(**validated_data)
+
+
+def cargo_update(instance, validated_data):
+    # Update the instance with the validated data
+    instance.weight = validated_data.get("weight", instance.weight)
+    instance.description = validated_data.get("description", instance.description)
+    instance.save()
+    return instance
+
+
+def find_vehicles_within_distance_from_cargo(cargo_id, max_distance_miles=450):
+    # Get the cargo's pick-up location
+    cargo = Cargo.objects.get(id=cargo_id)
+    pick_up_location = cargo.pick_up
+
+    # Get the latitude and longitude of the cargo's pick-up location
+    cargo_coords = (pick_up_location.latitude, pick_up_location.longitude)
+
+    # Query vehicles and calculate distances
+    vehicle_distances = []
+    all_vehicles = Vehicle.objects.all()
+    for vehicle in all_vehicles:
+        vehicle_coords = (
+            vehicle.current_location.latitude,
+            vehicle.current_location.longitude,
+        )
+        distance = geodesic(cargo_coords, vehicle_coords).miles
+        if distance <= max_distance_miles:
+            vehicle_distances.append((vehicle, distance))
+
+    # Sort vehicles by distance (nearest first)
+    sorted_vehicles = sorted(vehicle_distances, key=itemgetter(1))
+
+    return [vehicle for vehicle, distance in sorted_vehicles]
