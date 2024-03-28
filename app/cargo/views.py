@@ -8,6 +8,7 @@ from .serializers import (
     CargoReadSerializer,
     CargoEditSerializer,
     CargoWithVehiclesDistanceSerializer,
+    CargoDetailSerializer,
 )
 
 
@@ -16,6 +17,8 @@ class CargoViewSet(viewsets.ModelViewSet):
     filter_backends = [CargoWeightFilter]
 
     def get_serializer_class(self):
+        if self.action == "retrieve":
+            return CargoDetailSerializer
         if self.request.method in SAFE_METHODS:
             if "max_distance_miles" in self.request.query_params:
                 return CargoWithVehiclesDistanceSerializer

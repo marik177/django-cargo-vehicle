@@ -135,3 +135,6 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/3"),
     },
 }
+
+# in miles
+MAX_DELIVERY_DISTANCE = 8000

@@ -77,5 +77,7 @@ def find_vehicles_within_distance_from_cargo(cargo_id, max_distance_miles=450):
 
     # Sort vehicles by distance (nearest first)
     sorted_vehicles = sorted(vehicle_distances, key=itemgetter(1))
-
-    return [round(distance, 2) for vehicle, distance in sorted_vehicles]
+    return [
+        (vehicle.unique_number, round(distance, 2))
+        for vehicle, distance in sorted_vehicles
+    ]

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.conf import settings
 from .models import Location, Cargo, Vehicle
 from .services import (
     create_cargo,
@@ -65,7 +66,7 @@ class CargoWithVehiclesDistanceSerializer(CargoReadSerializer):
         nearest_vehicles_distance = find_vehicles_within_distance_from_cargo(
             obj.id, max_distance_miles
         )
-        return nearest_vehicles_distance
+        return [distance for vehicle_number, distance in nearest_vehicles_distance]
 
 
 class CargoCreateSerializer(serializers.ModelSerializer):
@@ -86,6 +87,28 @@ class CargoEditSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         return cargo_update(instance, validated_data)
+
+
+class CargoDetailSerializer(CargoReadSerializer):
+    nearest_vehicles = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cargo
+        fields = [
+            "id",
+            "pick_up",
+            "delivery",
+            "description",
+            "weight",
+            "number_of_vehicles",
+            "nearest_vehicles",
+        ]
+
+    def get_nearest_vehicles(self, obj):
+        nearest_vehicles = find_vehicles_within_distance_from_cargo(
+            obj.id, settings.MAX_DELIVERY_DISTANCE
+        )
+        return nearest_vehicles
 
 
 class VehicleSerializer(serializers.ModelSerializer):
