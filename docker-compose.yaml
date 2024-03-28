@@ -3,7 +3,7 @@ version: '3.8'
 services:
   cargo:
     build: ./app
-    command: bash -c 'while !</dev/tcp/cargo-db/5432; do sleep 1; done; python manage.py runserver 0.0.0.0:8000'
+    command: bash -c 'while !</dev/tcp/cargo-db/5432; do sleep 1; done; python manage.py migrate && python manage.py runserver 0.0.0.0:8000'
     volumes:
       - ./app/:/usr/src/app/
     ports:
@@ -21,6 +21,27 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=cargo_dev
+
+  redis:
+    image: redis:alpine
+  celery:
+    build: ./app
+    command: celery -A drf_project worker -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./app/.env
+    depends_on:
+      - redis
+  celery-beat:
+    build: ./app
+    command: celery -A drf_project beat -l info
+    volumes:
+      - ./app/:/usr/src/app/
+    env_file:
+      - ./app/.env
+    depends_on:
+      - redis
 
 volumes:
   postgres_data:
