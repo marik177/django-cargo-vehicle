@@ -90,7 +90,7 @@ class CargoEditSerializer(serializers.Serializer):
 
 
 class CargoDetailSerializer(CargoReadSerializer):
-    nearest_vehicles = serializers.SerializerMethodField()
+    all_vehicles = serializers.SerializerMethodField()
 
     class Meta:
         model = Cargo
@@ -101,14 +101,14 @@ class CargoDetailSerializer(CargoReadSerializer):
             "description",
             "weight",
             "number_of_vehicles",
-            "nearest_vehicles",
+            "all_vehicles",
         ]
 
-    def get_nearest_vehicles(self, obj):
-        nearest_vehicles = find_vehicles_within_distance_from_cargo(
+    def get_all_vehicles(self, obj):
+        all_vehicles = find_vehicles_within_distance_from_cargo(
             obj.id, settings.MAX_DELIVERY_DISTANCE
         )
-        return nearest_vehicles
+        return all_vehicles
 
 
 class VehicleSerializer(serializers.ModelSerializer):
