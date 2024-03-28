@@ -5,6 +5,14 @@ from geopy.distance import geodesic
 from rest_framework.exceptions import ValidationError
 
 
+def get_locations():
+    return Location.objects.all()
+
+
+def get_vehicles():
+    return Vehicle.objects.all()
+
+
 def create_cargo(validated_data):
     pick_up_properties = validated_data.pop("pick_up")
     zip_code = validated_data.pop("delivery").get("zip_code")
@@ -41,6 +49,10 @@ def cargo_update(instance, validated_data):
     instance.description = validated_data.get("description", instance.description)
     instance.save()
     return instance
+
+
+def update_vehicles(vehicles):
+    Vehicle.objects.bulk_update(vehicles, ["current_location"])
 
 
 def find_vehicles_within_distance_from_cargo(cargo_id, max_distance_miles=450):
