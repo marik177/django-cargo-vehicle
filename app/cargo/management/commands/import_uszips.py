@@ -1,5 +1,6 @@
 import csv
 import os
+from itertools import islice
 from django.core.management.base import BaseCommand
 from cargo.models import Location
 
@@ -20,14 +21,18 @@ class Command(BaseCommand):
 
         with open(filename, "r", encoding="utf-8") as csvfile:
             csv_reader = csv.DictReader(csvfile)
+            locations = []
             for row in csv_reader:
-                Location.objects.create(
-                    city=row["city"],
-                    state=row["state_name"],
-                    zip_code=row["zip"],
-                    latitude=row["lat"],
-                    longitude=row["lng"],
+                locations.append(
+                    Location(
+                        city=row["city"],
+                        state=row["state_name"],
+                        zip_code=row["zip"],
+                        latitude=row["lat"],
+                        longitude=row["lng"],
+                    )
                 )
+            Location.objects.bulk_create(locations, ignore_conflicts=True)
 
         self.stdout.write(
             self.style.SUCCESS(
