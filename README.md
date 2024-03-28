@@ -22,22 +22,24 @@ Welcome to the Django Cargo and Vehicle Management System! This application help
     ```bash
     git clone https://github.com/marik177/django-cargo-vehicle.git
    ```
-2. Using the Dockerfile and docker-compose.yaml run the project:
+2. Rename env to .env
+3. Using the Dockerfile and docker-compose.yaml run the project:
    ```bash
    docker-compose up --build
    ```
-3. In new terminal window run command:
+4. In new terminal window run command:
    ````bash
    docker-compose exec cargo sh
    ````
-4. Imports uszips.csv data into the PostgreSQL database:
+5. Imports uszips.csv data into the PostgreSQL database, it could take up to 30 sec
    ````bash
    python manage.py import_uszips cargo/data/uszips.csv
    ````
-5. Populates the database with initial vehicle entries:
+6. Populates the database with initial vehicle entries:
    ```bash
    python manage.py add_vehicles
    ```
+7. Visit http://127.0.0.1:8000/api/cargo/ and create some cargo.
    
 
 
