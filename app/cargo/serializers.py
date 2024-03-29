@@ -4,7 +4,7 @@ from .models import Location, Cargo, Vehicle
 from .services import (
     create_cargo,
     cargo_update,
-    find_vehicles_within_distance_from_cargo,
+    VehicleFinderService,
 )
 
 
@@ -40,8 +40,9 @@ class CargoReadSerializer(serializers.ModelSerializer):
 
     def get_number_of_vehicles(self, obj):
         cargo_id = obj.id
-        vehicles_within_distance = find_vehicles_within_distance_from_cargo(cargo_id)
-        return len(vehicles_within_distance)
+        number_of_vehicles_service = VehicleFinderService(cargo_id)
+        number_of_vehicles_service.execute()
+        return number_of_vehicles_service.number_of_vehicles
 
 
 class CargoWithVehiclesDistanceSerializer(CargoReadSerializer):
@@ -63,10 +64,11 @@ class CargoWithVehiclesDistanceSerializer(CargoReadSerializer):
         max_distance_miles = self.context["request"].query_params.get(
             "max_distance_miles"
         )
-        nearest_vehicles_distance = find_vehicles_within_distance_from_cargo(
-            obj.id, max_distance_miles
+        number_of_vehicles_service = VehicleFinderService(
+            obj.id, max_distance_miles=max_distance_miles
         )
-        return [distance for vehicle_number, distance in nearest_vehicles_distance]
+        nearest_vehicles_distance = number_of_vehicles_service.execute()
+        return [vehicle.distance for vehicle in nearest_vehicles_distance]
 
 
 class CargoCreateSerializer(serializers.ModelSerializer):
@@ -100,15 +102,15 @@ class CargoDetailSerializer(CargoReadSerializer):
             "delivery",
             "description",
             "weight",
-            "number_of_vehicles",
             "all_vehicles",
         ]
 
     def get_all_vehicles(self, obj):
-        all_vehicles = find_vehicles_within_distance_from_cargo(
-            obj.id, settings.MAX_DELIVERY_DISTANCE
+        number_of_vehicles_service = VehicleFinderService(
+            obj.id, max_distance_miles=settings.MAX_DELIVERY_DISTANCE
         )
-        return all_vehicles
+        all_vehicles = number_of_vehicles_service.execute()
+        return [[vehicle.unique_number, vehicle.distance] for vehicle in all_vehicles]
 
 
 class VehicleSerializer(serializers.ModelSerializer):
